@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Any, Optional
 
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 
 from app.models import (
     AttemptStatus, Confidence, Difficulty,
@@ -78,11 +78,11 @@ class QuestionOut(BaseModel):
 class AttemptCreate(BaseModel):
     user_id: int
     question_id: int
-    attempt_number: int
+    attempt_number: Optional[int] = None
     code_submitted: str
     time_taken: int  # seconds
     hints_used: int = 0
-    hint_levels_used: list[int] = []
+    hint_levels_used: list[int] = Field(default_factory=list)
     test_cases_passed: int
     total_test_cases: int
     errors: Optional[str] = None

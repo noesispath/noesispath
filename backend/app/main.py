@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from app.database import Base, engine
-from app.routers import attempts, execute, patterns, questions, review_queue, users
+from app.routers import attempts, execute, hints, patterns, questions, review_queue, users
 
 
 @asynccontextmanager
@@ -28,14 +28,15 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-app.include_router(users.router)
-app.include_router(questions.router)
-app.include_router(attempts.router)
-app.include_router(execute.router)
-app.include_router(patterns.router)
-app.include_router(review_queue.router)
+app.include_router(users.router, prefix="/api")
+app.include_router(questions.router, prefix="/api")
+app.include_router(attempts.router, prefix="/api")
+app.include_router(execute.router, prefix="/api")
+app.include_router(patterns.router, prefix="/api")
+app.include_router(review_queue.router, prefix="/api")
+app.include_router(hints.router, prefix="/api", tags=["hints"])
 
 
-@app.get("/health", tags=["Health"])
+@app.get("/api/health", tags=["Health"])
 async def health():
     return {"status": "ok"}
