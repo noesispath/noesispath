@@ -25,6 +25,7 @@ noesispath/
 │       ├── users.py
 │       ├── questions.py
 │       ├── attempts.py
+│       ├── execute.py
 │       ├── patterns.py
 │       └── review_queue.py
 ├── alembic/
@@ -81,6 +82,7 @@ API docs → http://localhost:8000/docs
 | Users          | `/users`         | CRUD + soft delete                   |
 | Questions      | `/questions`     | DSA problem bank                     |
 | Attempts       | `/attempts`      | Per-user attempt tracking            |
+| Execution      | `/execute`       | Run Python code in Docker sandbox    |
 | Patterns       | `/patterns`      | Detected learning weaknesses         |
 | Review Queue   | `/review-queue`  | Spaced repetition scheduling         |
 
@@ -97,6 +99,8 @@ GET    /questions/?topic=tree&difficulty=hard  Filter questions
 
 POST   /attempts/                           Log attempt
 GET    /attempts/user/{uid}/question/{qid}  All attempts by user on question
+
+POST   /execute                             Execute Python code
 
 POST   /patterns/                           Store detected pattern
 GET    /patterns/?user_id=1&topic=dp        Query patterns

@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from app.database import Base, engine
-from app.routers import attempts, patterns, questions, review_queue, users
+from app.routers import attempts, execute, patterns, questions, review_queue, users
 
 
 @asynccontextmanager
@@ -24,6 +24,7 @@ app = FastAPI(
 app.include_router(users.router)
 app.include_router(questions.router)
 app.include_router(attempts.router)
+app.include_router(execute.router)
 app.include_router(patterns.router)
 app.include_router(review_queue.router)
 
