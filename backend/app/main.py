@@ -11,6 +11,13 @@ async def lifespan(app: FastAPI):
     # Create all tables on startup (use Alembic for production migrations)
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+
+    # Optionally seed questions if flag is set
+    import os
+    if os.environ.get("SEED_QUESTIONS_ON_START", "0") == "1":
+        from app.api.seeds.seed_questions import seed_questions
+        import asyncio
+        await seed_questions()
     yield
 
 
