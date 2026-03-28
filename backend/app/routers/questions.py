@@ -13,7 +13,6 @@ from app.models import Question
 async def list_questions(db: AsyncSession = Depends(get_db)):
 	result = await db.execute(select(Question))
 	questions = result.scalars().all()
-	# Convert SQLAlchemy objects to dicts for JSON response
 	return [
 		{
 			"id": q.id,
@@ -28,3 +27,23 @@ async def list_questions(db: AsyncSession = Depends(get_db)):
 		}
 		for q in questions
 	]
+
+
+from fastapi import HTTPException
+
+@router.get("/{id}", summary="Get a question by ID")
+async def get_question(id: int, db: AsyncSession = Depends(get_db)):
+	question = await db.get(Question, id)
+	if not question:
+		raise HTTPException(status_code=404, detail="Question not found")
+	return {
+		"id": question.id,
+		"title": question.title,
+		"description": question.description,
+		"difficulty": question.difficulty,
+		"topic": question.topic,
+		"expected_time": question.expected_time,
+		"test_cases": question.test_cases,
+		"hints": question.hints,
+		"created_at": question.created_at,
+	}

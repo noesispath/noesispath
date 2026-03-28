@@ -1,6 +1,8 @@
 from contextlib import asynccontextmanager
 
+
 from fastapi import FastAPI
+from app.cors_setup import setup_cors
 
 from app.database import Base, engine
 from app.routers import attempts, execute, hints, patterns, questions, review_queue, users
@@ -27,6 +29,8 @@ app = FastAPI(
     version="1.0.0",
     lifespan=lifespan,
 )
+
+setup_cors(app)
 
 app.include_router(users.router, prefix="/api")
 app.include_router(questions.router, prefix="/api")
