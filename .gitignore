@@ -1,0 +1,73 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+*.pyo
+*.pyd
+*.pdb
+*.egg-info/
+.eggs/
+dist/
+build/
+*.egg
+*.log
+*.sqlite3
+*.db
+*.env
+.env.*
+.venv/
+venv/
+ENV/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# VSCode
+.vscode/
+.history/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+*.pid
+*.pid.lock
+
+# Test/coverage
+.coverage
+.tox/
+.nox/
+.cache/
+pytest_cache/
+htmlcov/
+
+# Migrations
+noesispath/backend/app/migrations/
+
+# Node
+node_modules/
+
+# Misc
+*.swp
+*.swo
+
+# Ignore local config
+noesispath/backend/.env
+noesispath/backend/.env.*
+
+# Ignore compiled files
+*.so
+
+# Ignore judge0 logs and temp
+judge0/log/
+judge0/tmp/
+
+# Ignore database
+judge0/db/*.sqlite3
+judge0/db/*.db
+
+# Ignore docker-compose override
+*.override.yml
