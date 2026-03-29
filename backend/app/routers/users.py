@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
@@ -33,16 +34,26 @@ async def list_users(skip: int = 0, limit: int = 50, db: AsyncSession = Depends(
 
 
 @router.get("/{user_id}", response_model=UserOut)
-async def get_user(user_id: int, db: AsyncSession = Depends(get_db)):
-    user = await db.get(User, user_id)
+async def get_user(user_id: str, db: AsyncSession = Depends(get_db)):
+    try:
+        user_uuid = uuid.UUID(user_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid user_id format; must be UUID")
+
+    user = await db.get(User, user_uuid)
     if not user or user.deleted:
         raise HTTPException(status_code=404, detail="User not found")
     return user
 
 
 @router.patch("/{user_id}", response_model=UserOut)
-async def update_user(user_id: int, payload: UserUpdate, db: AsyncSession = Depends(get_db)):
-    user = await db.get(User, user_id)
+async def update_user(user_id: str, payload: UserUpdate, db: AsyncSession = Depends(get_db)):
+    try:
+        user_uuid = uuid.UUID(user_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid user_id format; must be UUID")
+
+    user = await db.get(User, user_uuid)
     if not user or user.deleted:
         raise HTTPException(status_code=404, detail="User not found")
 
@@ -55,8 +66,13 @@ async def update_user(user_id: int, payload: UserUpdate, db: AsyncSession = Depe
 
 
 @router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def soft_delete_user(user_id: int, db: AsyncSession = Depends(get_db)):
-    user = await db.get(User, user_id)
+async def soft_delete_user(user_id: str, db: AsyncSession = Depends(get_db)):
+    try:
+        user_uuid = uuid.UUID(user_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid user_id format; must be UUID")
+
+    user = await db.get(User, user_uuid)
     if not user or user.deleted:
         raise HTTPException(status_code=404, detail="User not found")
 

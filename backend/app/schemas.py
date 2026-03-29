@@ -1,5 +1,6 @@
 from datetime import datetime
 from typing import Any, Optional
+from uuid import UUID as PyUUID
 
 from pydantic import BaseModel, EmailStr, Field
 
@@ -25,7 +26,7 @@ class UserUpdate(BaseModel):
 
 
 class UserOut(BaseModel):
-    id: int
+    id: PyUUID
     name: str
     email: str
     organization: Optional[str]
@@ -47,6 +48,10 @@ class QuestionCreate(BaseModel):
     expected_time: int  # minutes
     test_cases: dict[str, Any]
     hints: dict[str, Any]
+    starter_code: Optional[str] = None
+    examples: list[dict[str, Any]] = Field(default_factory=list)
+    constraints: list[str] = Field(default_factory=list)
+    follow_up: Optional[str] = None
 
 
 class QuestionUpdate(BaseModel):
@@ -57,6 +62,10 @@ class QuestionUpdate(BaseModel):
     expected_time: Optional[int] = None
     test_cases: Optional[dict[str, Any]] = None
     hints: Optional[dict[str, Any]] = None
+    starter_code: Optional[str] = None
+    examples: Optional[list[dict[str, Any]]] = None
+    constraints: Optional[list[str]] = None
+    follow_up: Optional[str] = None
 
 
 class QuestionOut(BaseModel):
@@ -68,6 +77,10 @@ class QuestionOut(BaseModel):
     expected_time: int
     test_cases: dict[str, Any]
     hints: dict[str, Any]
+    starter_code: Optional[str] = None
+    examples: list[dict[str, Any]] = Field(default_factory=list)
+    constraints: list[str] = Field(default_factory=list)
+    follow_up: Optional[str] = None
     created_at: datetime
 
     model_config = {"from_attributes": True}
@@ -76,7 +89,7 @@ class QuestionOut(BaseModel):
 # ── Attempt ────────────────────────────────────────────────────────────────
 
 class AttemptCreate(BaseModel):
-    user_id: int
+    user_id: PyUUID
     question_id: int
     attempt_number: Optional[int] = None
     code_submitted: str
@@ -87,11 +100,12 @@ class AttemptCreate(BaseModel):
     total_test_cases: int
     errors: Optional[str] = None
     status: AttemptStatus
+    code_snapshots: list[dict[str, Any]] = Field(default_factory=list)
 
 
 class AttemptOut(BaseModel):
-    id: int
-    user_id: int
+    id: PyUUID
+    user_id: PyUUID
     question_id: int
     attempt_number: int
     code_submitted: str
@@ -103,6 +117,7 @@ class AttemptOut(BaseModel):
     errors: Optional[str]
     status: AttemptStatus
     created_at: datetime
+    code_snapshots: list[dict[str, Any]] = Field(default_factory=list)
 
     model_config = {"from_attributes": True}
 
@@ -125,8 +140,8 @@ class PatternUpdate(BaseModel):
 
 
 class PatternOut(BaseModel):
-    id: int
-    user_id: int
+    id: PyUUID
+    user_id: PyUUID
     pattern_type: PatternType
     topic: str
     description: str
@@ -141,7 +156,7 @@ class PatternOut(BaseModel):
 # ── Review Queue ───────────────────────────────────────────────────────────
 
 class ReviewQueueCreate(BaseModel):
-    user_id: int
+    user_id: PyUUID
     question_id: int
     scheduled_for: datetime
     reason: ReviewReason
@@ -155,8 +170,8 @@ class ReviewQueueUpdate(BaseModel):
 
 
 class ReviewQueueOut(BaseModel):
-    id: int
-    user_id: int
+    id: PyUUID
+    user_id: PyUUID
     question_id: int
     scheduled_for: datetime
     reason: ReviewReason

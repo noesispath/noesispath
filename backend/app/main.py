@@ -2,9 +2,11 @@ from contextlib import asynccontextmanager
 
 
 from fastapi import FastAPI
+from sqlalchemy import select, func
 from app.cors_setup import setup_cors
 
 from app.database import Base, engine
+from app.models import Question
 from app.routers import attempts, execute, hints, patterns, questions, review_queue, users
 
 
@@ -14,12 +16,15 @@ async def lifespan(app: FastAPI):
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
-    # Optionally seed questions if flag is set
+        # Count questions and seed if empty or env requested
+        question_count = await conn.scalar(select(func.count()).select_from(Question))
+
     import os
-    if os.environ.get("SEED_QUESTIONS_ON_START", "0") == "1":
+    should_seed = os.environ.get("SEED_QUESTIONS_ON_START", "0") == "1"
+    if should_seed or question_count == 0:
         from app.api.seeds.seed_questions import seed_questions
-        import asyncio
         await seed_questions()
+
     yield
 
 

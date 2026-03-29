@@ -1,11 +1,12 @@
 from datetime import datetime
 from typing import Optional
+import uuid
 
 from sqlalchemy import (
     Boolean, DateTime, Enum, ForeignKey, Integer,
     String, Text, func,
 )
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
@@ -63,7 +64,7 @@ class Priority(str, enum.Enum):
 class User(Base):
     __tablename__ = "users"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     email: Mapped[str] = mapped_column(String(255), unique=True, nullable=False, index=True)
     organization: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
@@ -90,6 +91,10 @@ class Question(Base):
     test_cases: Mapped[dict] = mapped_column(JSONB, nullable=False)
     hints: Mapped[dict] = mapped_column(JSONB, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    starter_code: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    examples: Mapped[list] = mapped_column(JSONB, server_default='[]')
+    constraints: Mapped[list] = mapped_column(JSONB, server_default='[]')
+    follow_up: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
 
     attempts: Mapped[list["Attempt"]] = relationship("Attempt", back_populates="question")
     review_queue: Mapped[list["ReviewQueue"]] = relationship("ReviewQueue", back_populates="question")
@@ -98,8 +103,8 @@ class Question(Base):
 class Attempt(Base):
     __tablename__ = "attempts"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     question_id: Mapped[int] = mapped_column(ForeignKey("questions.id", ondelete="CASCADE"), nullable=False)
     attempt_number: Mapped[int] = mapped_column(Integer, nullable=False)
     code_submitted: Mapped[str] = mapped_column(Text, nullable=False)
@@ -111,6 +116,7 @@ class Attempt(Base):
     errors: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     status: Mapped[AttemptStatus] = mapped_column(Enum(AttemptStatus), nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    code_snapshots: Mapped[list] = mapped_column(JSONB, server_default='[]')
 
     user: Mapped["User"] = relationship("User", back_populates="attempts")
     question: Mapped["Question"] = relationship("Question", back_populates="attempts")
@@ -119,8 +125,8 @@ class Attempt(Base):
 class Pattern(Base):
     __tablename__ = "patterns"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     pattern_type: Mapped[PatternType] = mapped_column(Enum(PatternType), nullable=False)
     topic: Mapped[str] = mapped_column(String(100), nullable=False)
     description: Mapped[str] = mapped_column(Text, nullable=False)
@@ -135,8 +141,8 @@ class Pattern(Base):
 class ReviewQueue(Base):
     __tablename__ = "review_queue"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     question_id: Mapped[int] = mapped_column(ForeignKey("questions.id", ondelete="CASCADE"), nullable=False)
     scheduled_for: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     reason: Mapped[ReviewReason] = mapped_column(Enum(ReviewReason), nullable=False)

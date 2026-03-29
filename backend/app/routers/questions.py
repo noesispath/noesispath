@@ -23,6 +23,10 @@ async def list_questions(db: AsyncSession = Depends(get_db)):
 			"expected_time": q.expected_time,
 			"test_cases": q.test_cases,
 			"hints": q.hints,
+			"starter_code": q.starter_code,
+			"examples": q.examples,
+			"constraints": q.constraints,
+			"follow_up": q.follow_up,
 			"created_at": q.created_at,
 		}
 		for q in questions
@@ -45,5 +49,9 @@ async def get_question(id: int, db: AsyncSession = Depends(get_db)):
 		"expected_time": question.expected_time,
 		"test_cases": question.test_cases,
 		"hints": question.hints,
+		"starter_code": question.starter_code,
+		"examples": question.examples,
+		"constraints": question.constraints,
+		"follow_up": question.follow_up,
 		"created_at": question.created_at,
 	}
