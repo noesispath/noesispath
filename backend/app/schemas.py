@@ -51,6 +51,7 @@ class QuestionCreate(BaseModel):
     starter_code: Optional[str] = None
     examples: list[dict[str, Any]] = Field(default_factory=list)
     constraints: list[str] = Field(default_factory=list)
+    learn: dict[str, Any] = Field(default_factory=dict)
     follow_up: Optional[str] = None
 
 
@@ -65,6 +66,7 @@ class QuestionUpdate(BaseModel):
     starter_code: Optional[str] = None
     examples: Optional[list[dict[str, Any]]] = None
     constraints: Optional[list[str]] = None
+    learn: Optional[dict[str, Any]] = None
     follow_up: Optional[str] = None
 
 
@@ -80,6 +82,7 @@ class QuestionOut(BaseModel):
     starter_code: Optional[str] = None
     examples: list[dict[str, Any]] = Field(default_factory=list)
     constraints: list[str] = Field(default_factory=list)
+    learn: dict[str, Any] = Field(default_factory=dict)
     follow_up: Optional[str] = None
     created_at: datetime
 
@@ -103,6 +106,18 @@ class AttemptCreate(BaseModel):
     code_snapshots: list[dict[str, Any]] = Field(default_factory=list)
 
 
+class AttemptUpdate(BaseModel):
+    code_submitted: Optional[str] = None
+    time_taken: Optional[int] = None
+    hints_used: Optional[int] = None
+    hint_levels_used: Optional[list[int]] = None
+    test_cases_passed: Optional[int] = None
+    total_test_cases: Optional[int] = None
+    errors: Optional[str] = None
+    status: Optional[AttemptStatus] = None
+    code_snapshots: Optional[list[dict[str, Any]]] = None
+
+
 class AttemptOut(BaseModel):
     id: PyUUID
     user_id: PyUUID
@@ -123,6 +138,22 @@ class AttemptOut(BaseModel):
 
 
 # ── Pattern ────────────────────────────────────────────────────────────────
+
+class BlueprintValidateRequest(BaseModel):
+    question_id: int
+    user_id: str
+    approach: str
+
+
+class BlueprintValidationOut(BaseModel):
+    is_valid: bool
+    feedback: str
+    missing: Optional[str] = None
+    edge_cases_considered: bool
+    nudge: str
+
+    model_config = {"from_attributes": True}
+
 
 class PatternCreate(BaseModel):
     user_id: int

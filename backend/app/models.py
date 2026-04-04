@@ -31,6 +31,7 @@ class AttemptStatus(str, enum.Enum):
     passed = "passed"
     failed = "failed"
     partial = "partial"
+    in_progress = "in_progress"
 
 
 class PatternType(str, enum.Enum):
@@ -77,6 +78,7 @@ class User(Base):
     attempts: Mapped[list["Attempt"]] = relationship("Attempt", back_populates="user")
     patterns: Mapped[list["Pattern"]] = relationship("Pattern", back_populates="user")
     review_queue: Mapped[list["ReviewQueue"]] = relationship("ReviewQueue", back_populates="user")
+    blueprints: Mapped[list["Blueprint"]] = relationship("Blueprint", back_populates="user")
 
 
 class Question(Base):
@@ -94,10 +96,12 @@ class Question(Base):
     starter_code: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     examples: Mapped[list] = mapped_column(JSONB, server_default='[]')
     constraints: Mapped[list] = mapped_column(JSONB, server_default='[]')
+    learn: Mapped[dict] = mapped_column(JSONB, server_default='{}', nullable=False)
     follow_up: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
 
     attempts: Mapped[list["Attempt"]] = relationship("Attempt", back_populates="question")
     review_queue: Mapped[list["ReviewQueue"]] = relationship("ReviewQueue", back_populates="question")
+    blueprints: Mapped[list["Blueprint"]] = relationship("Blueprint", back_populates="question")
 
 
 class Attempt(Base):
@@ -120,6 +124,22 @@ class Attempt(Base):
 
     user: Mapped["User"] = relationship("User", back_populates="attempts")
     question: Mapped["Question"] = relationship("Question", back_populates="attempts")
+
+
+class Blueprint(Base):
+    __tablename__ = "blueprints"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    question_id: Mapped[int] = mapped_column(ForeignKey("questions.id", ondelete="CASCADE"), nullable=False)
+    approach: Mapped[str] = mapped_column(Text, nullable=False)
+    is_valid: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    feedback: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    edge_cases_considered: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+    user: Mapped["User"] = relationship("User", back_populates="blueprints")
+    question: Mapped["Question"] = relationship("Question", back_populates="blueprints")
 
 
 class Pattern(Base):

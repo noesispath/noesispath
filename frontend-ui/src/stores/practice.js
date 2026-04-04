@@ -19,6 +19,8 @@ export const usePracticeStore = defineStore('practice', {
     snapshotInterval: null,
     currentCode: '',
     currentUserId: null,
+    draftAttemptId: null,
+    draftSaving: false,
   }),
 
   actions: {
@@ -39,20 +41,68 @@ export const usePracticeStore = defineStore('practice', {
       return `${m}:${s.toString().padStart(2, '0')}`
     },
 
+    takeSnapshot() {
+      if (this.currentCode !== null && this.currentCode !== undefined && this.currentCode !== '') {
+        this.codeSnapshots.push({
+          timestamp: Math.floor((Date.now() - this.startTime) / 1000),
+          code: this.currentCode
+        })
+      }
+    },
+
+    async saveDraft() {
+      if (!this.draftAttemptId) return
+
+      this.draftSaving = true
+      try {
+        await api.patch(`/attempts/${this.draftAttemptId}`, {
+          code_submitted: this.currentCode,
+          time_taken: this.elapsedSeconds,
+          code_snapshots: this.codeSnapshots,
+        })
+      } catch (error) {
+        // non-blocking failure; we can logging if needed
+        console.error('Draft auto-save failed', error)
+      } finally {
+        this.draftSaving = false
+      }
+    },
+
     startSnapshots() {
       this.codeSnapshots = []
+      this.takeSnapshot()
+      this.saveDraft()
       this.snapshotInterval = setInterval(() => {
-        if (this.currentCode) {
-          this.codeSnapshots.push({
-            timestamp: Math.floor((Date.now() - this.startTime) / 1000),
-            code: this.currentCode
-          })
-        }
-      }, 30000)
+        this.takeSnapshot()
+        this.saveDraft()
+      }, 300000) // 5 minutes
     },
 
     stopSnapshots() {
       clearInterval(this.snapshotInterval)
+    },
+
+    async createDraftAttempt() {
+      if (!this.currentUserId || !this.question) return
+
+      try {
+        const res = await api.post('/attempts', {
+          user_id: this.currentUserId,
+          question_id: this.question.id,
+          code_submitted: this.currentCode,
+          time_taken: 0,
+          hints_used: 0,
+          hint_levels_used: [],
+          test_cases_passed: 0,
+          total_test_cases: this.question.test_cases?.length || 0,
+          errors: null,
+          status: 'in_progress',
+          code_snapshots: [],
+        })
+        this.draftAttemptId = res.data.id
+      } catch (error) {
+        console.error('Draft attempt creation failed', error)
+      }
     },
 
     async loadQuestion(id) {
@@ -79,9 +129,11 @@ export const usePracticeStore = defineStore('practice', {
 
       const res = await api.get(`/questions/${id}`)
       this.question = res.data
+      this.currentCode = this.question?.starter_code || ''
       this.startTime = Date.now()
       this.loading = false
       this.startTimer()
+      await this.createDraftAttempt()
       this.startSnapshots()
     },
 
@@ -133,8 +185,9 @@ export const usePracticeStore = defineStore('practice', {
           ? 'passed'
           : passed > 0 ? 'partial' : 'failed'
 
-        // Capture attempt
-        const attemptRes = await api.post('/attempts', {
+        // Capture attempt (finalize draft if exists)
+        let attemptRes
+        const attemptPayload = {
           user_id: this.currentUserId,
           question_id: this.question.id,
           code_submitted: code,
@@ -148,7 +201,14 @@ export const usePracticeStore = defineStore('practice', {
           errors: this.output?.error || null,
           status,
           code_snapshots: this.codeSnapshots
-        })
+        }
+
+        if (this.draftAttemptId) {
+          attemptRes = await api.patch(`/attempts/${this.draftAttemptId}`, attemptPayload)
+          this.draftAttemptId = null
+        } else {
+          attemptRes = await api.post('/attempts', attemptPayload)
+        }
 
         this.output = {
           ...this.output,

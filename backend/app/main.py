@@ -2,12 +2,12 @@ from contextlib import asynccontextmanager
 
 
 from fastapi import FastAPI
-from sqlalchemy import select, func
+from sqlalchemy import select, func, text
 from app.cors_setup import setup_cors
 
 from app.database import Base, engine
 from app.models import Question
-from app.routers import attempts, execute, hints, patterns, questions, review_queue, users
+from app.routers import attempts, blueprints, execute, hints, patterns, questions, review_queue, users
 
 
 @asynccontextmanager
@@ -15,6 +15,7 @@ async def lifespan(app: FastAPI):
     # Create all tables on startup (use Alembic for production migrations)
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+        await conn.execute(text("ALTER TABLE questions ADD COLUMN IF NOT EXISTS learn JSONB DEFAULT '{}'"))
 
         # Count questions and seed if empty or env requested
         question_count = await conn.scalar(select(func.count()).select_from(Question))
@@ -40,6 +41,7 @@ setup_cors(app)
 app.include_router(users.router, prefix="/api")
 app.include_router(questions.router, prefix="/api")
 app.include_router(attempts.router, prefix="/api")
+app.include_router(blueprints.router, prefix="/api")
 app.include_router(execute.router, prefix="/api")
 app.include_router(patterns.router, prefix="/api")
 app.include_router(review_queue.router, prefix="/api")

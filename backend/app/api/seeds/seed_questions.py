@@ -22,6 +22,7 @@ async def seed_questions():
                     starter_code=q.get("starter_code"),
                     examples=q.get("examples", []),
                     constraints=q.get("constraints", []),
+                    learn=q.get("learn", {}),
                     follow_up=q.get("follow_up"),
                 )
                 session.add(question)
@@ -36,6 +37,7 @@ async def seed_questions():
                 existing.starter_code = q.get("starter_code")
                 existing.examples = q.get("examples", [])
                 existing.constraints = q.get("constraints", [])
+                existing.learn = q.get("learn", {})
                 existing.follow_up = q.get("follow_up")
         await session.commit()
         # Reset the sequence so future inserts don't collide with seeded IDs

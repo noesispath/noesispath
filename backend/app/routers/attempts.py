@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.models import Attempt, Question, User
-from app.schemas import AttemptCreate, AttemptOut
+from app.schemas import AttemptCreate, AttemptOut, AttemptUpdate
 
 router = APIRouter(prefix="/attempts", tags=["Attempts"])
 client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
@@ -113,6 +113,25 @@ async def get_attempt_history(
     q = select(Attempt).where(Attempt.user_id == user_uuid, Attempt.question_id == question_id)
     result = await db.scalars(q.order_by(Attempt.attempt_number))
     return result.all()
+
+
+@router.patch("/{attempt_id}", response_model=AttemptOut)
+async def update_attempt(
+    attempt_id: str,
+    payload: AttemptUpdate,
+    db: AsyncSession = Depends(get_db),
+):
+    attempt_uuid = uuid.UUID(attempt_id)
+    attempt = await db.get(Attempt, attempt_uuid)
+    if not attempt:
+        raise HTTPException(status_code=404, detail="Attempt not found")
+
+    for field, value in payload.model_dump(exclude_unset=True).items():
+        setattr(attempt, field, value)
+
+    await db.commit()
+    await db.refresh(attempt)
+    return attempt
 
 
 @router.post("/{attempt_id}/feedback")

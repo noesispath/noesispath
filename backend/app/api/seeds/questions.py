@@ -40,6 +40,21 @@ pythonquestions = [
             "Only one valid answer exists"
         ],
         "follow_up": "Can you come up with an algorithm that is less than O(n²) time complexity?",
+        "learn": {
+            "concept": "Hashmap lookup",
+            "explanation": "The fastest way to solve this is by storing numbers as you iterate and checking whether the complement to the target already exists. A hashmap lets you do that lookup in constant time, so you can solve it in one pass.",
+            "analogy": "It is like keeping a list of groceries and checking whether the item you need is already on the shelf before you buy a second one.",
+            "key_properties": [
+                "Maps values to indices for O(1) lookup",
+                "Builds incrementally while scanning the array",
+                "Stops as soon as the target pair is found",
+                "Avoids nested loops and O(n²) time"
+            ],
+            "resources": [
+                {"title": "NeetCode YouTube — Hashmap practice", "url": "https://www.youtube.com/@NeetCode", "type": "video"},
+                {"title": "Python dictionary documentation", "url": "https://docs.python.org/3/tutorial/datastructures.html#dictionaries", "type": "article"}
+            ]
+        },
         "starter_code": """n = int(input())\nnums = list(map(int, input().split()))\ntarget = int(input())\n\ndef two_sum(nums, target):\n    # Write your code here\n    return []\n\nresult = two_sum(nums, target)\nprint(result)\n"""
     },
     {
@@ -81,6 +96,21 @@ pythonquestions = [
             "s and t consist of lowercase English letters"
         ],
         "follow_up": "What if the inputs contain Unicode characters?",
+        "learn": {
+            "concept": "Frequency counting with hashmaps",
+            "explanation": "Valid Anagram is about comparing how many times each character appears in both strings. A hashmap is ideal for counting character frequency and then checking whether the two strings have the same counts.",
+            "analogy": "It is like counting the number of red and blue marbles in two jars to see if both jars have the same collection.",
+            "key_properties": [
+                "Counts characters in O(n) time",
+                "Uses a hashmap to compare frequency maps",
+                "Handles different string lengths quickly",
+                "Can use one pass with incremental counting"
+            ],
+            "resources": [
+                {"title": "NeetCode YouTube — Hashmap practice", "url": "https://www.youtube.com/@NeetCode", "type": "video"},
+                {"title": "Python dictionary documentation", "url": "https://docs.python.org/3/tutorial/datastructures.html#dictionaries", "type": "article"}
+            ]
+        },
         "starter_code": """s = input()\nt = input()\n\ndef is_anagram(s, t):\n    # Write your code here\n    return False\n\nresult = is_anagram(s, t)\nprint(result)\n"""
     },
     {
@@ -122,6 +152,21 @@ pythonquestions = [
             "0 <= prices[i] <= 10^4"
         ],
         "follow_up": "Can you solve this problem in a single pass with O(1) extra space?",
+        "learn": {
+            "concept": "Single-pass max profit",
+            "explanation": "The key idea is to remember the lowest price seen so far and calculate the profit if you sold at the current price. That way you can find the maximum profit in one sweep through the array.",
+            "analogy": "It is like watching stock prices and always remembering the cheapest day so you can sell later for the biggest gain.",
+            "key_properties": [
+                "Tracks a running minimum price",
+                "Updates the best profit at each step",
+                "Uses O(1) extra space",
+                "Avoids nested comparisons by scanning once"
+            ],
+            "resources": [
+                {"title": "NeetCode YouTube — One-pass trading problems", "url": "https://www.youtube.com/@NeetCode", "type": "video"},
+                {"title": "Python built-in min() documentation", "url": "https://docs.python.org/3/library/functions.html#min", "type": "article"}
+            ]
+        },
         "starter_code": """n = int(input())\nprices = list(map(int, input().split()))\n\ndef max_profit(prices):\n    # Write your code here\n    return 0\n\nresult = max_profit(prices)\nprint(result)\n"""
     },
     {
@@ -163,6 +208,21 @@ pythonquestions = [
             "-10^9 <= nums[i] <= 10^9"
         ],
         "follow_up": "Can you solve this with O(n) time and O(n) extra space?",
+        "learn": {
+            "concept": "Duplicate detection with a set",
+            "explanation": "The fastest way to detect duplicates is to track seen values in a set while you scan the array. If a value is already present, you can return true immediately.",
+            "analogy": "It is like checking a guest list by crossing names off as people arrive and spotting the first repeated name.",
+            "key_properties": [
+                "Uses set membership for O(1) checks",
+                "Scans the array once",
+                "Can exit early on first duplicate",
+                "Requires O(n) extra space in the worst case"
+            ],
+            "resources": [
+                {"title": "NeetCode YouTube — Hashmap practice", "url": "https://www.youtube.com/@NeetCode", "type": "video"},
+                {"title": "Python set documentation", "url": "https://docs.python.org/3/library/stdtypes.html#set", "type": "article"}
+            ]
+        },
         "starter_code": """n = int(input())\nnums = list(map(int, input().split()))\n\ndef contains_duplicate(nums):\n    # Write your code here\n    return False\n\nresult = contains_duplicate(nums)\nprint(result)\n"""
     },
     {
@@ -204,6 +264,21 @@ pythonquestions = [
             "-10^4 <= nums[i] <= 10^4"
         ],
         "follow_up": "Can you do this in O(n) time and O(1) space?",
+        "learn": {
+            "concept": "Kadane's algorithm",
+            "explanation": "Maximum Subarray is solved by keeping a running sum and resetting whenever the sum drops below zero. The maximum sum seen during the scan is the answer.",
+            "analogy": "It is like tracking your best winning streak: if your current streak becomes negative, start a new streak from the next game.",
+            "key_properties": [
+                "Maintains a running current sum",
+                "Resets when the current sum is negative",
+                "Keeps track of the maximum sum seen",
+                "Works in one linear pass"
+            ],
+            "resources": [
+                {"title": "NeetCode YouTube — Kadane's algorithm", "url": "https://www.youtube.com/@NeetCode", "type": "video"},
+                {"title": "Python max() documentation", "url": "https://docs.python.org/3/library/functions.html#max", "type": "article"}
+            ]
+        },
         "starter_code": """n = int(input())\nnums = list(map(int, input().split()))\n\ndef max_subarray(nums):\n    # Write your code here\n    return 0\n\nresult = max_subarray(nums)\nprint(result)\n"""
     },
     {
@@ -245,6 +320,21 @@ pythonquestions = [
             "s consists only of '()[]{}'"
         ],
         "follow_up": "Can you solve this with O(n) time and O(n) space?",
+        "learn": {
+            "concept": "Stack-based bracket matching",
+            "explanation": "A stack lets you match brackets in the correct nested order. Push opening characters and pop when a matching closing bracket appears.",
+            "analogy": "It is like nesting boxes: the last box you put on top must be the first one you take off.",
+            "key_properties": [
+                "Push opening brackets onto the stack",
+                "Pop and compare when encountering closers",
+                "Reject mismatches immediately",
+                "The stack must be empty at the end"
+            ],
+            "resources": [
+                {"title": "NeetCode YouTube — Stack problems", "url": "https://www.youtube.com/@NeetCode", "type": "video"},
+                {"title": "Python list as stack documentation", "url": "https://docs.python.org/3/tutorial/datastructures.html#using-lists-as-stacks", "type": "article"}
+            ]
+        },
         "starter_code": """s = input()\n\ndef is_valid_parentheses(s):\n    # Write your code here\n    return False\n\nresult = is_valid_parentheses(s)\nprint(result)\n"""
     },
     {
@@ -286,6 +376,21 @@ pythonquestions = [
             "-10^5 <= node.val <= 10^5"
         ],
         "follow_up": "Can you implement this iteratively and recursively?",
+        "learn": {
+            "concept": "In-place linked list reversal",
+            "explanation": "Reverse the linked list by walking through it with pointers and rewiring each node's next reference to point backward. No extra list structure is needed.",
+            "analogy": "It is like reversing a line of dominoes by turning each one to face the opposite direction, one at a time.",
+            "key_properties": [
+                "Use prev, curr, and next pointers",
+                "Reverse links in place without extra storage",
+                "Move forward through the list exactly once",
+                "Return the new head when finished"
+            ],
+            "resources": [
+                {"title": "NeetCode YouTube — Linked list problems", "url": "https://www.youtube.com/@NeetCode", "type": "video"},
+                {"title": "Real Python linked list guide", "url": "https://realpython.com/linked-lists-python/", "type": "article"}
+            ]
+        },
         "starter_code": """n = int(input())
         
 head = list(map(int, input().split()))\n\ndef reverse_linked_list(head):\n    # Write your code here\n    return []\n\nresult = reverse_linked_list(head)\nprint(result)\n"""
@@ -330,6 +435,21 @@ head = list(map(int, input().split()))\n\ndef reverse_linked_list(head):\n    # 
             "-10^4 <= target <= 10^4"
         ],
         "follow_up": "Can you implement this iteratively?",
+        "learn": {
+            "concept": "Divide-and-conquer search",
+            "explanation": "Binary search repeatedly halves the searchable range in a sorted list until the target is found or the range is empty. It runs in logarithmic time.",
+            "analogy": "It is like finding a word in a dictionary by opening near the middle and deciding whether to look left or right.",
+            "key_properties": [
+                "Requires sorted input",
+                "Uses left/right pointers around mid",
+                "Halves the search range each step",
+                "Returns index or -1 if not found"
+            ],
+            "resources": [
+                {"title": "NeetCode YouTube — Binary search", "url": "https://www.youtube.com/@NeetCode", "type": "video"},
+                {"title": "Python bisect module documentation", "url": "https://docs.python.org/3/library/bisect.html", "type": "article"}
+            ]
+        },
         "starter_code": """n = int(input())\nnums = list(map(int, input().split()))\ntarget = int(input())\n\ndef binary_search(nums, target):\n    # Write your code here\n    return -1\n\nresult = binary_search(nums, target)\nprint(result)\n"""
     },
     {
@@ -370,6 +490,21 @@ head = list(map(int, input().split()))\n\ndef reverse_linked_list(head):\n    # 
             "1 <= n <= 45"
         ],
         "follow_up": "Can you implement this using O(1) space?",
+        "learn": {
+            "concept": "Recursive dynamic programming",
+            "explanation": "Climbing Stairs follows the Fibonacci recurrence: the number of ways to reach step n is the sum of ways to reach the two previous steps. Use DP or memoization to avoid repeated work.",
+            "analogy": "It is like counting how many paths you can take up a small staircase when you can move one or two steps at a time.",
+            "key_properties": [
+                "Uses the recurrence f(n) = f(n-1) + f(n-2)",
+                "Has base cases for n = 1 and n = 2",
+                "Avoids exponential recursion with memo or iteration",
+                "Runs in linear time"
+            ],
+            "resources": [
+                {"title": "NeetCode YouTube — Dynamic programming basics", "url": "https://www.youtube.com/@NeetCode", "type": "video"},
+                {"title": "Wikipedia dynamic programming overview", "url": "https://en.wikipedia.org/wiki/Dynamic_programming", "type": "article"}
+            ]
+        },
         "starter_code": """n = int(input())\n\ndef climb_stairs(n):\n    # Write your code here\n    return 0\n\nresult = climb_stairs(n)\nprint(result)\n"""
     },
     {
@@ -411,6 +546,21 @@ head = list(map(int, input().split()))\n\ndef reverse_linked_list(head):\n    # 
             "-100 <= node.val <= 100"
         ],
         "follow_up": "Can you do this in-place with O(1) extra space?",
+        "learn": {
+            "concept": "Merging sorted lists",
+            "explanation": "To merge two sorted linked lists, walk both lists with two pointers and attach the smaller current node to the merged list. This preserves sorted order using linear time.",
+            "analogy": "It is like merging two sorted decks of cards by always taking the lower card from the top of each deck.",
+            "key_properties": [
+                "Compares the current node from both lists",
+                "Advances the pointer on the chosen list",
+                "Attaches the remaining tail when one list is done",
+                "Runs in O(n + m) time"
+            ],
+            "resources": [
+                {"title": "NeetCode YouTube — Merge sorted list problems", "url": "https://www.youtube.com/@NeetCode", "type": "video"},
+                {"title": "Python heapq.merge documentation", "url": "https://docs.python.org/3/library/heapq.html#heapq.merge", "type": "article"}
+            ]
+        },
         "starter_code": """n1 = int(input())\nl1 = list(map(int, input().split()))\nn2 = int(input())\nl2 = list(map(int, input().split()))\n\ndef merge_two_lists(l1, l2):\n    # Write your code here\n    return []\n\nresult = merge_two_lists(l1, l2)\nprint(result)\n"""
     }
 ]

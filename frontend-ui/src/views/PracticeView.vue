@@ -13,6 +13,9 @@
       </div>
       <div class="flex items-center gap-2 min-w-0">
         <span class="text-lg text-gray-500 font-mono mr-2">Python 3</span>
+        <span v-if="store.draftAttemptId" class="text-xs font-mono text-gray-400 mr-3">
+          Draft: <span class="text-green-300">{{ store.draftSaving ? 'Saving...' : 'Saved' }}</span>
+        </span>
         <button
           class="px-6 py-1.5 text-sm bg-yellow-500 hover:bg-yellow-400 text-black rounded-full font-mono transition flex items-center gap-2"
           aria-label="Timer">
@@ -47,23 +50,128 @@
       </div>
     </div>
     <div class="flex flex-1 h-full">
-      <!-- Left Panel — Question / History -->
+      <!-- Left Panel — Learn / Blueprint / Solve -->
       <div class="w-2/5 min-w-0 flex flex-col border-r border-gray-800 overflow-y-auto text-base custom-scrollbar">
-        <!-- Tab toggle -->
         <div class="flex border-b border-gray-800 shrink-0">
           <button
-            v-for="tab in ['Problem', 'History']" :key="tab"
-            @click="activeTab = tab"
+            v-for="tab in ['Learn', 'Blueprint', 'Solve']" :key="tab"
+            @click="switchMode(tab)"
             class="px-6 py-3 text-xs tracking-widest uppercase transition"
-            :class="activeTab === tab
+            :class="activeMode === tab
               ? 'text-white border-b border-white'
               : 'text-gray-600 hover:text-gray-400'">
             {{ tab }}
           </button>
         </div>
 
-        <!-- Problem tab -->
-        <div v-if="activeTab === 'Problem'">
+        <div v-if="activeMode === 'Learn'">
+          <div v-if="store.loading" class="p-6 text-gray-500 text-sm">Loading...</div>
+          <div v-else-if="store.question" class="w-full p-6 flex flex-col gap-6">
+            <div class="text-xs tracking-widest text-gray-500 uppercase">Learn</div>
+            <h2 class="text-2xl font-bold text-white">{{ store.question.learn.concept }}</h2>
+            <p class="text-base text-gray-300 leading-relaxed whitespace-normal break-words">
+              {{ store.question.learn.explanation }}
+            </p>
+            <div class="rounded border border-yellow-700 bg-yellow-950 p-4">
+              <div class="text-xs uppercase tracking-widest text-yellow-300">Think of it like...</div>
+              <p class="mt-2 text-sm text-yellow-100 leading-relaxed">
+                {{ store.question.learn.analogy }}
+              </p>
+            </div>
+            <div>
+              <div class="text-xs tracking-widest text-gray-500 uppercase">Key properties</div>
+              <ul class="mt-3 space-y-2">
+                <li v-for="(property, i) in store.question.learn.key_properties" :key="i"
+                  class="flex items-start gap-2 text-sm text-gray-300">
+                  <span class="mt-1 text-green-400">•</span>
+                  <span>{{ property }}</span>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <div class="text-xs tracking-widest text-gray-500 uppercase">Resources</div>
+              <div class="mt-3 space-y-2">
+                <a v-for="(resource, i) in store.question.learn.resources" :key="i"
+                  :href="resource.url"
+                  target="_blank"
+                  rel="noopener"
+                  class="block text-sm text-blue-300 hover:text-blue-100">
+                  {{ resource.title }} <span class="text-gray-500">({{ resource.type }})</span>
+                </a>
+              </div>
+            </div>
+            <button @click="switchMode('Blueprint')"
+              class="mt-4 px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-full text-sm font-semibold">
+              Ready to plan your approach? → Blueprint
+            </button>
+          </div>
+        </div>
+
+        <div v-if="activeMode === 'Blueprint'">
+          <div v-if="store.loading" class="p-6 text-gray-500 text-sm">Loading...</div>
+          <div v-else-if="store.question" class="w-full p-6 flex flex-col gap-6">
+            <div>
+              <div class="text-xs tracking-widest text-blue-400 uppercase">Blueprint</div>
+              <h2 class="text-2xl font-bold text-white">Plan Your Approach</h2>
+              <p class="mt-2 text-sm text-gray-300 leading-relaxed">
+                Before writing code — explain how you'd solve this in plain English. No code. Just your thinking.
+              </p>
+            </div>
+            <textarea
+              v-model="blueprintApproach"
+              rows="8"
+              class="w-full rounded border border-gray-800 bg-gray-900 px-4 py-3 text-sm text-gray-100 focus:outline-none focus:border-blue-500"
+              placeholder="Write your approach here..."></textarea>
+            <button
+              @click="validateBlueprint"
+              :disabled="blueprintLoading || !blueprintApproach.trim()"
+              class="w-full px-6 py-3 text-sm rounded-full font-semibold bg-green-700 hover:bg-green-600 disabled:opacity-40 disabled:cursor-not-allowed text-white">
+              {{ blueprintLoading ? 'Validating...' : 'Validate My Thinking' }}
+            </button>
+
+            <div v-if="blueprintResult" class="rounded border border-gray-800 bg-gray-900 p-4 space-y-4">
+              <div :class="{
+                  'text-green-400': blueprintResult.is_valid,
+                  'text-red-400': !blueprintResult.is_valid,
+                }"
+                class="text-sm font-semibold">
+                {{ blueprintResult.is_valid ? 'Verdict: Your approach looks solid.' : 'Verdict: This approach needs revision.' }}
+              </div>
+              <div>
+                <div class="text-xs text-gray-500 uppercase tracking-widest">Feedback</div>
+                <p class="mt-1 text-sm text-gray-200 leading-relaxed">{{ blueprintResult.feedback }}</p>
+              </div>
+              <div v-if="blueprintResult.missing">
+                <div class="text-xs text-gray-500 uppercase tracking-widest">What's missing</div>
+                <p class="mt-1 text-sm text-gray-200 leading-relaxed">{{ blueprintResult.missing }}</p>
+              </div>
+              <div>
+                <div class="text-xs text-gray-500 uppercase tracking-widest">Edge cases considered</div>
+                <p class="mt-1 text-sm text-gray-200">{{ blueprintResult.edge_cases_considered ? 'Yes' : 'No' }}</p>
+              </div>
+              <div class="text-sm text-blue-200 italic">{{ blueprintResult.nudge }}</div>
+              <button @click="switchMode('Solve')"
+                class="mt-2 px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-full text-sm font-semibold">
+                Start Coding → Solve
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div v-if="activeMode === 'Solve'">
+          <div v-if="showLearnNudge" class="m-6 rounded border border-blue-800 bg-blue-950 p-3 text-sm text-blue-200 flex items-start justify-between gap-4">
+            <div>
+              New to this topic? Check Learn first to build the core concept before you code.
+            </div>
+            <button @click="dismissLearnNudge" class="text-xs uppercase text-gray-400 hover:text-white">Dismiss</button>
+          </div>
+          <div v-if="showBlueprintNudge" class="m-6 rounded border border-yellow-700 bg-yellow-950 p-3 text-sm text-yellow-100 flex items-start justify-between gap-4">
+            <div>
+              You haven't planned your approach yet. Blueprint first?
+            </div>
+            <button @click="dismissBlueprintNudge" class="text-xs uppercase text-gray-400 hover:text-white">Dismiss</button>
+          </div>
+
           <div v-if="store.loading" class="p-6 text-gray-500 text-sm">Loading...</div>
           <div v-else-if="store.question" class="w-full p-6 flex flex-col gap-6">
             <div class="flex items-center gap-3 mb-3 w-full">
@@ -86,11 +194,11 @@
 
             <!-- Examples -->
             <div v-if="store.question.examples && store.question.examples.length" class="flex flex-col gap-3">
-              <div class="text-xs tracking-widest text-gray-500 uppercase">Examples</div>
+              <div class="text-sm tracking-widest text-gray-500 uppercase">Examples</div>
               <div v-for="(ex, i) in store.question.examples" :key="i"
                 class="rounded border border-gray-800 bg-gray-900 p-3">
-                <div class="text-xs text-gray-500 mb-2">Example {{ i + 1 }}</div>
-                <div class="font-mono text-xs text-gray-300">
+                <div class="text-sm text-gray-400 mb-2">Example {{ i + 1 }}</div>
+                <div class="font-mono text-sm text-gray-300">
                   <div><span class="text-gray-500">Input: </span>{{ ex.input }}</div>
                   <div><span class="text-gray-500">Output: </span>{{ ex.output }}</div>
                   <div v-if="ex.explanation">
@@ -172,43 +280,42 @@
               </div>
               <p class="text-sm text-blue-200 leading-relaxed">{{ store.hint }}</p>
             </div>
-          </div>
-        </div>
 
-        <!-- History tab -->
-        <div v-if="activeTab === 'History'" class="p-6 flex flex-col gap-3">
-          <div v-if="store.history.length === 0" class="text-sm text-gray-600">
-            No submissions yet.
-          </div>
-          <div v-for="attempt in store.history" :key="attempt.id"
-            class="border border-gray-800 rounded p-4">
-            <div class="flex items-center justify-between mb-2">
-              <span class="text-xs text-gray-400">
-                Attempt #{{ attempt.attempt_number }}
-              </span>
-              <span class="text-xs px-2 py-0.5 rounded border"
-                :class="{
-                  'border-green-800 text-green-400': attempt.status === 'passed',
-                  'border-red-800 text-red-400': attempt.status === 'failed',
-                  'border-yellow-800 text-yellow-400': attempt.status === 'partial',
-                }">
-                {{ attempt.status }}
-              </span>
+            <div class="flex flex-col gap-3">
+              <div class="text-xs tracking-widest text-gray-500 uppercase">Submission history</div>
+              <div v-if="store.history.length === 0" class="text-sm text-gray-600">
+                No submissions yet.
+              </div>
+              <div v-for="attempt in store.history" :key="attempt.id"
+                class="border border-gray-800 rounded p-4">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-xs text-gray-400">
+                    Attempt #{{ attempt.attempt_number }}
+                  </span>
+                  <span class="text-xs px-2 py-0.5 rounded border"
+                    :class="{
+                      'border-green-800 text-green-400': attempt.status === 'passed',
+                      'border-red-800 text-red-400': attempt.status === 'failed',
+                      'border-yellow-800 text-yellow-400': attempt.status === 'partial',
+                    }">
+                    {{ attempt.status }}
+                  </span>
+                </div>
+                <div class="text-xs text-gray-600 mb-3">
+                  {{ Math.floor(attempt.time_taken / 60) }}m {{ attempt.time_taken % 60 }}s
+                  · {{ attempt.hints_used }} hints
+                  · {{ attempt.test_cases_passed }} tests passed
+                </div>
+                <details class="cursor-pointer">
+                  <summary class="text-xs text-gray-500 hover:text-gray-300">
+                    View code
+                  </summary>
+                  <pre class="mt-2 text-xs font-mono text-gray-400 bg-gray-900 rounded p-3 overflow-x-auto whitespace-pre-wrap">{{
+                    attempt.code_submitted
+                  }}</pre>
+                </details>
+              </div>
             </div>
-            <div class="text-xs text-gray-600 mb-3">
-              {{ Math.floor(attempt.time_taken / 60) }}m {{ attempt.time_taken % 60 }}s
-              · {{ attempt.hints_used }} hints
-              · {{ attempt.test_cases_passed }} tests passed
-            </div>
-            <details class="cursor-pointer">
-              <summary class="text-xs text-gray-500 hover:text-gray-300">
-                View code
-              </summary>
-              <pre class="mt-2 text-xs font-mono text-gray-400 bg-gray-900
-                rounded p-3 overflow-x-auto whitespace-pre-wrap">{{
-                attempt.code_submitted
-              }}</pre>
-            </details>
           </div>
         </div>
       </div>
@@ -239,11 +346,94 @@
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { usePracticeStore } from '../stores/practice'
+import api from '../api'
 
 const route = useRoute()
 const store = usePracticeStore()
 const code = ref('')
-const activeTab = ref('Problem')
+const activeMode = ref('Solve')
+const blueprintApproach = ref('')
+const blueprintResult = ref(null)
+const blueprintLoading = ref(false)
+const learnVisited = ref(false)
+const blueprintVisited = ref(false)
+const blueprintValidated = ref(false)
+const showLearnNudge = ref(false)
+const showBlueprintNudge = ref(false)
+
+const learnNudgeKey = () => `noesispath_learn_nudge_dismissed_${store.question?.id}`
+const blueprintNudgeKey = () => `noesispath_blueprint_nudge_dismissed_${store.question?.id}`
+
+function isSessionDismissed(key) {
+  return typeof window !== 'undefined' && window.sessionStorage.getItem(key) === '1'
+}
+
+function dismissLearnNudge() {
+  if (typeof window !== 'undefined' && store.question) {
+    window.sessionStorage.setItem(learnNudgeKey(), '1')
+  }
+  showLearnNudge.value = false
+}
+
+function dismissBlueprintNudge() {
+  if (typeof window !== 'undefined' && store.question) {
+    window.sessionStorage.setItem(blueprintNudgeKey(), '1')
+  }
+  showBlueprintNudge.value = false
+}
+
+function refreshNudges() {
+  if (!store.question) return
+  showLearnNudge.value = activeMode.value === 'Solve'
+    && !learnVisited.value
+    && !blueprintVisited.value
+    && !isSessionDismissed(learnNudgeKey())
+  showBlueprintNudge.value = false
+}
+
+function switchMode(mode) {
+  activeMode.value = mode
+
+  if (mode === 'Learn') {
+    learnVisited.value = true
+    showLearnNudge.value = false
+    if (typeof window !== 'undefined' && store.question) {
+      window.sessionStorage.setItem(learnNudgeKey(), '1')
+    }
+  }
+  if (mode === 'Blueprint') {
+    blueprintVisited.value = true
+    showLearnNudge.value = false
+  }
+  if (mode === 'Solve') {
+    if (blueprintVisited.value && !blueprintValidated.value && !isSessionDismissed(blueprintNudgeKey())) {
+      showBlueprintNudge.value = true
+    } else {
+      showBlueprintNudge.value = false
+    }
+  }
+}
+
+async function validateBlueprint() {
+  if (!blueprintApproach.value.trim() || !store.question || !store.currentUserId) return
+
+  blueprintLoading.value = true
+  try {
+    const res = await api.post('/blueprint/validate', {
+      question_id: store.question.id,
+      user_id: store.currentUserId,
+      approach: blueprintApproach.value,
+    })
+
+    blueprintResult.value = res.data
+    blueprintValidated.value = true
+    showBlueprintNudge.value = false
+  } catch (error) {
+    console.error('Blueprint validation failed', error)
+  } finally {
+    blueprintLoading.value = false
+  }
+}
 
 onMounted(async () => {
   await store.loadQuestion(route.params.id)
@@ -252,6 +442,7 @@ onMounted(async () => {
   if (store.currentUserId) {
     await store.loadHistory(store.currentUserId, route.params.id)
   }
+  refreshNudges()
 })
 
 function runCode() { store.runCode(code.value) }
